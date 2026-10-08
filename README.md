@@ -5,6 +5,12 @@ Frontend application for **SupportDesk**, an internal IT support ticket manageme
 SupportDesk provides role-based interfaces for employees, support agents, and administrators while communicating with a separate Spring Boot REST API.
 
 ---
+## 🌐 Live Demo
+
+[Open SupportDesk](https://supportdesk-frontend-fawn.vercel.app/)
+
+> **Note:** The backend is hosted on a free Render instance and may take up to a minute to wake up after a period of inactivity. If the first demo login fails, please try once more after a few seconds.
+
 
 ## Screenshots
 

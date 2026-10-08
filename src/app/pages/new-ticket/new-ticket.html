@@ -1,0 +1,182 @@
+<app-navbar />
+
+<main class="min-h-screen bg-slate-950 text-white">
+  <div class="mx-auto max-w-3xl px-6 py-12">
+
+    <a
+      routerLink="/tickets"
+      class="text-sm font-semibold text-blue-400 hover:text-blue-300"
+    >
+      ← Back to tickets
+    </a>
+
+    <div class="mt-8">
+      <p
+        class="text-sm font-semibold uppercase tracking-wider text-blue-400"
+      >
+        SupportDesk
+      </p>
+
+      <h1 class="mt-2 text-3xl font-bold">
+        New support ticket
+      </h1>
+
+      <p class="mt-2 text-slate-400">
+        Tell the support team what you need help with.
+      </p>
+    </div>
+
+    <form
+      class="mt-8 space-y-6 rounded-xl border border-slate-800 bg-slate-900 p-8"
+      (ngSubmit)="createTicket()"
+    >
+      <div>
+        <label
+          for="title"
+          class="mb-2 block text-sm font-medium text-slate-300"
+        >
+          Title
+        </label>
+
+        <input
+          id="title"
+          name="title"
+          type="text"
+          [(ngModel)]="title"
+          maxlength="200"
+          required
+          placeholder="Briefly describe the issue"
+          class="w-full rounded-lg border border-slate-700 bg-slate-950 px-4 py-3 outline-none focus:border-blue-500"
+        />
+      </div>
+
+      <div>
+        <label
+          for="description"
+          class="mb-2 block text-sm font-medium text-slate-300"
+        >
+          Description
+        </label>
+
+        <textarea
+          id="description"
+          name="description"
+          [(ngModel)]="description"
+          rows="6"
+          required
+          placeholder="What happened? Include any useful details..."
+          class="w-full resize-none rounded-lg border border-slate-700 bg-slate-950 px-4 py-3 outline-none focus:border-blue-500"
+        ></textarea>
+      </div>
+
+      <div class="grid gap-6 md:grid-cols-2">
+        <div>
+          <label
+            for="category"
+            class="mb-2 block text-sm font-medium text-slate-300"
+          >
+            Category
+          </label>
+
+          @if (loadingCategories()) {
+            <p class="text-sm text-slate-400">
+              Loading categories...
+            </p>
+          } @else if (categoryError()) {
+            <p class="text-sm text-red-400">
+              {{ categoryError() }}
+            </p>
+          } @else {
+            <select
+              id="category"
+              name="category"
+              [(ngModel)]="categoryId"
+              required
+              class="w-full rounded-lg border border-slate-700 bg-slate-950 px-4 py-3 outline-none focus:border-blue-500"
+            >
+              <option
+                [ngValue]="null"
+                disabled
+              >
+                Select a category
+              </option>
+
+              @for (
+                category of categories();
+                track category.id
+              ) {
+                <option
+                  [ngValue]="category.id"
+                >
+                  {{ category.name }}
+                </option>
+              }
+            </select>
+          }
+        </div>
+
+        <div>
+          <label
+            for="priority"
+            class="mb-2 block text-sm font-medium text-slate-300"
+          >
+            Priority
+          </label>
+
+          <select
+            id="priority"
+            name="priority"
+            [(ngModel)]="priority"
+            class="w-full rounded-lg border border-slate-700 bg-slate-950 px-4 py-3 outline-none focus:border-blue-500"
+          >
+            @for (
+              priorityOption of priorities;
+              track priorityOption
+            ) {
+              <option
+                [value]="priorityOption"
+              >
+                {{ priorityOption }}
+              </option>
+            }
+          </select>
+        </div>
+      </div>
+
+      @if (submitError()) {
+        <p
+          class="rounded-lg border border-red-900 bg-red-950/30 p-4 text-sm text-red-400"
+        >
+          {{ submitError() }}
+        </p>
+      }
+
+      <div
+        class="flex items-center justify-end gap-4 border-t border-slate-800 pt-6"
+      >
+        <a
+          routerLink="/tickets"
+          class="rounded-lg px-5 py-3 font-semibold text-slate-300 hover:bg-slate-800"
+        >
+          Cancel
+        </a>
+
+        <button
+          type="submit"
+          [disabled]="
+            submitting() ||
+            loadingCategories() ||
+            categories().length === 0
+          "
+          class="rounded-lg bg-blue-600 px-6 py-3 font-semibold hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          @if (submitting()) {
+            Creating...
+          } @else {
+            Create ticket
+          }
+        </button>
+      </div>
+    </form>
+  </div>
+</main>

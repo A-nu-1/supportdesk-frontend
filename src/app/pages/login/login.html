@@ -1,0 +1,121 @@
+<main class="flex min-h-screen items-center justify-center bg-slate-950 px-6 text-white">
+  <div class="w-full max-w-md">
+    <p class="text-sm font-semibold uppercase tracking-widest text-blue-400">SupportDesk</p>
+
+    <h1 class="mt-3 text-3xl font-bold">Sign in</h1>
+
+    <p class="mt-2 text-slate-400">Sign in to manage your support tickets.</p>
+
+    <form class="mt-8 space-y-5" (ngSubmit)="login()">
+      <div>
+        <label for="email" class="mb-2 block text-sm font-medium"> Email </label>
+
+        <input
+          id="email"
+          name="email"
+          autocomplete="username"
+          type="email"
+          [(ngModel)]="email"
+          required
+          class="w-full rounded-lg border border-slate-700 bg-slate-900 px-4 py-3 outline-none focus:border-blue-500"
+          placeholder="you@example.com"
+        />
+      </div>
+
+      <div>
+        <label for="password" class="mb-2 block text-sm font-medium"> Password </label>
+
+        <input
+          id="password"
+          name="password"
+          autocomplete="current-password"
+          type="password"
+          [(ngModel)]="password"
+          required
+          class="w-full rounded-lg border border-slate-700 bg-slate-900 px-4 py-3 outline-none focus:border-blue-500"
+          placeholder="Enter your password"
+        />
+      </div>
+
+      @if (error()) {
+        <p class="text-sm text-red-400">
+          {{ error() }}
+        </p>
+      }
+
+      <button
+        type="submit"
+        [disabled]="loading()"
+        class="w-full rounded-lg bg-blue-600 px-5 py-3 font-semibold hover:bg-blue-500 disabled:opacity-50"
+      >
+        @if (loading()) {
+          Signing in...
+        } @else {
+          Sign in
+        }
+      </button>
+    </form>
+    <div class="my-8 flex items-center gap-4">
+      <div class="h-px flex-1 bg-slate-800"></div>
+
+      <span class="text-xs font-semibold uppercase tracking-wider text-slate-500">
+        Or explore the demo
+      </span>
+
+      <div class="h-px flex-1 bg-slate-800"></div>
+    </div>
+
+    <div>
+      <h2 class="text-lg font-semibold">Demo access</h2>
+
+      <p class="mt-1 text-sm text-slate-400">
+        Explore SupportDesk from different user perspectives.
+      </p>
+
+      <div class="mt-5 grid gap-3">
+        <button
+          type="button"
+          (click)="demoLogin('EMPLOYEE')"
+          [disabled]="demoLoading() !== null"
+          class="rounded-lg border border-slate-700 bg-slate-900 px-4 py-3 text-left hover:border-blue-500 hover:bg-slate-800 disabled:opacity-50"
+        >
+          <span class="block font-semibold"> 👩‍💼 Employee Demo </span>
+
+          <span class="mt-1 block text-sm text-slate-400">
+            Create tickets and communicate with support.
+          </span>
+        </button>
+
+        <button
+          type="button"
+          (click)="demoLogin('SUPPORT_AGENT')"
+          [disabled]="demoLoading() !== null"
+          class="rounded-lg border border-slate-700 bg-slate-900 px-4 py-3 text-left hover:border-blue-500 hover:bg-slate-800 disabled:opacity-50"
+        >
+          <span class="block font-semibold"> 🧑‍💻 Support Agent Demo </span>
+
+          <span class="mt-1 block text-sm text-slate-400">
+            Claim tickets and manage support workflows.
+          </span>
+        </button>
+
+        <button
+          type="button"
+          (click)="demoLogin('ADMIN')"
+          [disabled]="demoLoading() !== null"
+          class="rounded-lg border border-slate-700 bg-slate-900 px-4 py-3 text-left hover:border-blue-500 hover:bg-slate-800 disabled:opacity-50"
+        >
+          <span class="block font-semibold"> 🛡️ Admin Demo </span>
+
+          <span class="mt-1 block text-sm text-slate-400">
+            Explore administrative access and oversight.
+          </span>
+        </button>
+      </div>
+
+      @if (demoLoading()) {
+        <p class="mt-4 text-center text-sm text-blue-400">Opening demo...</p>
+      }
+    </div>
+  </div>
+</main>

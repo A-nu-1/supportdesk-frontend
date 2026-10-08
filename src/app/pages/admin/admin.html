@@ -1,0 +1,240 @@
+<app-navbar />
+
+<main class="min-h-screen bg-slate-950 text-white">
+  <div class="mx-auto max-w-6xl px-6 py-12">
+    <div class="border-b border-slate-800 pb-8">
+      <p class="text-sm font-semibold uppercase tracking-widest text-blue-400">SupportDesk</p>
+
+      <h1 class="mt-2 text-3xl font-bold">Administration</h1>
+
+      <p class="mt-2 text-slate-400">Manage SupportDesk users and categories.</p>
+    </div>
+
+    <section class="mt-8">
+      <div>
+        <h2 class="text-xl font-semibold">Users</h2>
+
+        <p class="mt-1 text-sm text-slate-400">Manage user roles and account access.</p>
+      </div>
+
+      @if (userError()) {
+        <div
+          class="mt-4 rounded-lg border border-red-900 bg-red-950/40 px-4 py-3 text-sm text-red-300"
+        >
+          {{ userError() }}
+        </div>
+      }
+
+      @if (loading()) {
+        <div class="py-10 text-slate-400">Loading users...</div>
+      } @else if (error()) {
+        <div class="py-10 text-red-400">
+          {{ error() }}
+        </div>
+      } @else {
+        <div class="mt-6 overflow-x-auto rounded-xl border border-slate-800">
+          <table class="w-full text-left">
+            <thead class="bg-slate-900">
+              <tr class="border-b border-slate-800 text-sm text-slate-400">
+                <th class="px-5 py-4">User</th>
+
+                <th class="px-5 py-4">Email</th>
+
+                <th class="px-5 py-4">Role</th>
+
+                <th class="px-5 py-4">Status</th>
+
+                <th class="px-5 py-4">Action</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              @for (user of users(); track user.id) {
+                <tr class="border-b border-slate-800 bg-slate-950 last:border-b-0">
+                  <td class="px-5 py-4">
+                    <p class="font-semibold">
+                      {{ user.firstName }}
+                      {{ user.lastName }}
+                    </p>
+                  </td>
+
+                  <td class="px-5 py-4 text-sm text-slate-400">
+                    {{ user.email }}
+                  </td>
+
+                  <td class="px-5 py-4">
+                    <select
+                      [ngModel]="user.role"
+                      (ngModelChange)="updateRole(user, $event)"
+                      [disabled]="savingUserId() === user.id || isCurrentUser(user)"
+                      class="rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm outline-none focus:border-blue-500 disabled:opacity-50"
+                    >
+                      @for (role of roles; track role) {
+                        <option [value]="role">
+                          {{ role }}
+                        </option>
+                      }
+                    </select>
+                  </td>
+
+                  <td class="px-5 py-4">
+                    @if (user.active) {
+                      <span
+                        class="rounded-full bg-emerald-950 px-3 py-1 text-xs font-semibold text-emerald-300"
+                      >
+                        ACTIVE
+                      </span>
+                    } @else {
+                      <span
+                        class="rounded-full bg-slate-800 px-3 py-1 text-xs font-semibold text-slate-400"
+                      >
+                        INACTIVE
+                      </span>
+                    }
+                  </td>
+
+                  <td class="px-5 py-4">
+                    <button
+                      type="button"
+                      (click)="toggleActive(user)"
+                      [disabled]="savingUserId() === user.id || isCurrentUser(user)"
+                      class="rounded-lg border border-slate-700 px-3 py-2 text-sm font-semibold hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      @if (savingUserId() === user.id) {
+                        Saving...
+                      } @else if (user.active) {
+                        Deactivate
+                      } @else {
+                        Activate
+                      }
+                    </button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </section>
+
+    <section class="mt-10">
+  <div>
+    <h2 class="text-xl font-semibold">
+      Categories
+    </h2>
+
+    <p class="mt-1 text-sm text-slate-400">
+      Manage support ticket categories.
+    </p>
+  </div>
+
+  @if (categoryError()) {
+    <div
+      class="mt-4 rounded-lg border border-red-900 bg-red-950/40 px-4 py-3 text-sm text-red-300"
+    >
+      {{ categoryError() }}
+    </div>
+  }
+
+  <form
+    class="mt-6 flex flex-col gap-3 sm:flex-row"
+    (ngSubmit)="createCategory()"
+  >
+    <input
+      type="text"
+      name="newCategoryName"
+      [(ngModel)]="newCategoryName"
+      placeholder="New category name"
+      [disabled]="creatingCategory()"
+      class="flex-1 rounded-lg border border-slate-700 bg-slate-900 px-4 py-3 outline-none focus:border-blue-500 disabled:opacity-50"
+    />
+
+    <button
+      type="submit"
+      [disabled]="
+        creatingCategory() ||
+        !newCategoryName.trim()
+      "
+      class="rounded-lg bg-blue-600 px-5 py-3 font-semibold hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-50"
+    >
+      @if (creatingCategory()) {
+        Adding...
+      } @else {
+        Add category
+      }
+    </button>
+  </form>
+
+  @if (categoriesLoading()) {
+    <div class="py-10 text-slate-400">
+      Loading categories...
+    </div>
+
+  } @else {
+    <div
+      class="mt-6 overflow-hidden rounded-xl border border-slate-800"
+    >
+      @for (
+        category of categories();
+        track category.id
+      ) {
+        <div
+          class="flex flex-col justify-between gap-4 border-b border-slate-800 bg-slate-950 px-5 py-4 last:border-b-0 sm:flex-row sm:items-center"
+        >
+          <div>
+            <p class="font-semibold">
+              {{ category.name }}
+            </p>
+
+            <p class="mt-1 text-xs text-slate-500">
+              Category #{{ category.id }}
+            </p>
+          </div>
+
+          <div
+            class="flex items-center gap-4"
+          >
+            @if (category.active) {
+              <span
+                class="rounded-full bg-emerald-950 px-3 py-1 text-xs font-semibold text-emerald-300"
+              >
+                ACTIVE
+              </span>
+            } @else {
+              <span
+                class="rounded-full bg-slate-800 px-3 py-1 text-xs font-semibold text-slate-400"
+              >
+                INACTIVE
+              </span>
+            }
+
+            <button
+              type="button"
+              (click)="toggleCategory(category)"
+              [disabled]="
+                savingCategoryId() ===
+                category.id
+              "
+              class="min-w-28 rounded-lg border border-slate-700 px-3 py-2 text-sm font-semibold hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              @if (
+                savingCategoryId() ===
+                category.id
+              ) {
+                Saving...
+              } @else if (
+                category.active
+              ) {
+                Deactivate
+              } @else {
+                Activate
+              }
+            </button>
+          </div>
+        </div>
+      }
+    </div>
+  }
+</section>
+  </div>
+</main>

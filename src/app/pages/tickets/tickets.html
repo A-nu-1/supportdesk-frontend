@@ -1,0 +1,395 @@
+<app-navbar />
+
+<main class="min-h-screen bg-slate-950 text-white">
+  <div class="mx-auto max-w-6xl px-6 py-12">
+
+    <div
+      class="flex items-start justify-between gap-6 border-b border-slate-800 pb-8"
+    >
+      <div>
+        <p
+          class="text-sm font-semibold uppercase tracking-widest text-blue-400"
+        >
+          SupportDesk
+        </p>
+
+        <h1 class="mt-2 text-3xl font-bold">
+          Tickets
+        </h1>
+
+        <p class="mt-2 text-slate-400">
+          View and manage support requests.
+        </p>
+      </div>
+
+      @if (role() === 'EMPLOYEE') {
+        <a
+          routerLink="/tickets/new"
+          class="rounded-lg bg-blue-600 px-5 py-3 font-semibold text-white hover:bg-blue-500"
+        >
+          New ticket
+        </a>
+      }
+    </div>
+
+    <!-- ROLE-AWARE VIEWS -->
+
+    <div
+      class="mt-8 flex flex-wrap gap-3"
+    >
+      @if (role() === 'EMPLOYEE') {
+        <button
+          type="button"
+          (click)="changeView('MY')"
+          [class.bg-blue-600]="activeView() === 'MY'"
+          [class.border-blue-500]="activeView() === 'MY'"
+          class="rounded-lg border border-slate-700 px-4 py-2 text-sm font-semibold hover:border-blue-500"
+        >
+          My Tickets
+        </button>
+      }
+
+      @if (role() === 'SUPPORT_AGENT') {
+        <button
+          type="button"
+          (click)="changeView('ASSIGNED')"
+          [class.bg-blue-600]="activeView() === 'ASSIGNED'"
+          [class.border-blue-500]="activeView() === 'ASSIGNED'"
+          class="rounded-lg border border-slate-700 px-4 py-2 text-sm font-semibold hover:border-blue-500"
+        >
+          Assigned to Me
+        </button>
+
+        <button
+          type="button"
+          (click)="changeView('ALL')"
+          [class.bg-blue-600]="activeView() === 'ALL'"
+          [class.border-blue-500]="activeView() === 'ALL'"
+          class="rounded-lg border border-slate-700 px-4 py-2 text-sm font-semibold hover:border-blue-500"
+        >
+          All Tickets
+        </button>
+      }
+
+      @if (role() === 'ADMIN') {
+        <button
+          type="button"
+          (click)="changeView('ALL')"
+          class="rounded-lg border border-blue-500 bg-blue-600 px-4 py-2 text-sm font-semibold"
+        >
+          All Tickets
+        </button>
+      }
+    </div>
+@if (activeView() === 'ALL') {
+  <form
+    class="mt-6 rounded-xl border border-slate-800 bg-slate-900 p-5"
+    (ngSubmit)="applyFilters()"
+  >
+    <div
+      class="grid gap-4 lg:grid-cols-4"
+    >
+      <div class="lg:col-span-4">
+        <label
+          for="search"
+          class="mb-2 block text-sm font-medium text-slate-300"
+        >
+          Search
+        </label>
+
+        <input
+          id="search"
+          name="search"
+          [(ngModel)]="search"
+          placeholder="Search title or description..."
+          class="w-full rounded-lg border border-slate-700 bg-slate-950 px-4 py-3 outline-none focus:border-blue-500"
+        />
+      </div>
+
+      <div>
+        <label
+          for="category"
+          class="mb-2 block text-sm font-medium text-slate-300"
+        >
+          Category
+        </label>
+
+        <select
+          id="category"
+          name="category"
+          [(ngModel)]="categoryId"
+          class="w-full rounded-lg border border-slate-700 bg-slate-950 px-4 py-3 outline-none focus:border-blue-500"
+        >
+          <option [ngValue]="null">
+            All categories
+          </option>
+
+          @for (
+            category of categories();
+            track category.id
+          ) {
+            <option
+              [ngValue]="category.id"
+            >
+              {{ category.name }}
+            </option>
+          }
+        </select>
+      </div>
+
+      <div>
+        <label
+          for="statusFilter"
+          class="mb-2 block text-sm font-medium text-slate-300"
+        >
+          Status
+        </label>
+
+        <select
+          id="statusFilter"
+          name="status"
+          [(ngModel)]="status"
+          class="w-full rounded-lg border border-slate-700 bg-slate-950 px-4 py-3 outline-none focus:border-blue-500"
+        >
+          <option value="">
+            All statuses
+          </option>
+
+          @for (
+            statusOption of statuses;
+            track statusOption
+          ) {
+            <option
+              [value]="statusOption"
+            >
+              {{ statusOption }}
+            </option>
+          }
+        </select>
+      </div>
+
+      <div>
+        <label
+          for="priorityFilter"
+          class="mb-2 block text-sm font-medium text-slate-300"
+        >
+          Priority
+        </label>
+
+        <select
+          id="priorityFilter"
+          name="priority"
+          [(ngModel)]="priority"
+          class="w-full rounded-lg border border-slate-700 bg-slate-950 px-4 py-3 outline-none focus:border-blue-500"
+        >
+          <option value="">
+            All priorities
+          </option>
+
+          @for (
+            priorityOption of priorities;
+            track priorityOption
+          ) {
+            <option
+              [value]="priorityOption"
+            >
+              {{ priorityOption }}
+            </option>
+          }
+        </select>
+      </div>
+
+      <div
+        class="flex items-end gap-3"
+      >
+        <button
+          type="submit"
+          class="flex-1 rounded-lg bg-blue-600 px-4 py-3 font-semibold hover:bg-blue-500"
+        >
+          Apply
+        </button>
+
+        <button
+          type="button"
+          (click)="clearFilters()"
+          class="rounded-lg border border-slate-700 px-4 py-3 font-semibold text-slate-300 hover:bg-slate-800"
+        >
+          Clear
+        </button>
+      </div>
+    </div>
+  </form>
+}
+    <!-- TICKETS -->
+
+    @if (loading()) {
+      <div class="py-12 text-slate-400">
+        Loading tickets...
+      </div>
+
+    } @else if (error()) {
+      <div class="py-12 text-red-400">
+        {{ error() }}
+      </div>
+
+    } @else if (tickets().length === 0) {
+      <div
+        class="mt-8 rounded-xl border border-slate-800 bg-slate-900 p-8 text-slate-400"
+      >
+        @if (activeView() === 'ASSIGNED') {
+          No tickets are currently assigned to you.
+        } @else if (activeView() === 'MY') {
+          You haven't created any tickets yet.
+        } @else {
+          No tickets found.
+        }
+      </div>
+
+    } @else {
+      <div class="mt-8 space-y-4">
+
+        @for (
+          ticket of tickets();
+          track ticket.id
+        ) {
+          <a
+            [routerLink]="[
+              '/tickets',
+              ticket.id
+            ]"
+            class="block rounded-xl border border-slate-800 bg-slate-900 p-6 transition hover:border-blue-500 hover:bg-slate-800"
+          >
+            <div
+              class="flex flex-col justify-between gap-4 md:flex-row md:items-start"
+            >
+              <div>
+                <div
+                  class="flex flex-wrap items-center gap-3"
+                >
+                  <span
+                    class="text-sm text-slate-500"
+                  >
+                    #{{ ticket.id }}
+                  </span>
+
+                  <span
+                    class="rounded-full bg-slate-800 px-3 py-1 text-xs font-semibold"
+                  >
+                    {{ ticket.status }}
+                  </span>
+
+                  <span
+                    class="rounded-full bg-slate-800 px-3 py-1 text-xs font-semibold"
+                  >
+                    {{ ticket.priority }}
+                  </span>
+                </div>
+
+                <h2
+                  class="mt-4 text-xl font-semibold"
+                >
+                  {{ ticket.title }}
+                </h2>
+
+                <p
+                  class="mt-2 text-slate-400"
+                >
+                  {{ ticket.description }}
+                </p>
+              </div>
+
+              <div
+                class="min-w-48 text-sm text-slate-400"
+              >
+                <p>
+                  <span
+                    class="text-slate-500"
+                  >
+                    Category:
+                  </span>
+
+                  {{ ticket.categoryName }}
+                </p>
+
+                <p class="mt-2">
+                  <span
+                    class="text-slate-500"
+                  >
+                    Created by:
+                  </span>
+
+                  {{ ticket.createdByName }}
+                </p>
+
+                <p class="mt-2">
+                  <span
+                    class="text-slate-500"
+                  >
+                    Assigned to:
+                  </span>
+
+                  @if (
+                    ticket.assignedToName
+                  ) {
+                    {{ ticket.assignedToName }}
+                  } @else {
+                    Unassigned
+                  }
+                </p>
+              </div>
+            </div>
+          </a>
+        }
+
+      </div>
+    }
+    @if (
+  activeView() === 'ALL' &&
+  !loading() &&
+  !error()
+) {
+  <div
+    class="mt-8 flex flex-col items-center justify-between gap-4 border-t border-slate-800 pt-6 sm:flex-row"
+  >
+    <p class="text-sm text-slate-400">
+      {{ totalElements() }}
+      ticket(s)
+    </p>
+
+    @if (totalPages() > 0) {
+      <div
+        class="flex items-center gap-4"
+      >
+        <button
+          type="button"
+          (click)="previousPage()"
+          [disabled]="currentPage() === 0"
+          class="rounded-lg border border-slate-700 px-4 py-2 text-sm font-semibold hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-40"
+        >
+          ← Previous
+        </button>
+
+        <span class="text-sm text-slate-400">
+          Page
+          {{ currentPage() + 1 }}
+          of
+          {{ totalPages() }}
+        </span>
+
+        <button
+          type="button"
+          (click)="nextPage()"
+          [disabled]="
+            currentPage() + 1 >=
+            totalPages()
+          "
+          class="rounded-lg border border-slate-700 px-4 py-2 text-sm font-semibold hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-40"
+        >
+          Next →
+        </button>
+      </div>
+    }
+  </div>
+}
+  </div>
+</main>

@@ -1,0 +1,210 @@
+<app-navbar />
+<main class="min-h-screen bg-slate-950 text-white">
+  <div class="mx-auto max-w-5xl px-6 py-12">
+    <a routerLink="/tickets" class="text-sm font-semibold text-blue-400 hover:text-blue-300">
+      ← Back to tickets
+    </a>
+
+    @if (loading()) {
+      <p class="mt-10 text-slate-400">Loading ticket...</p>
+    } @else if (error()) {
+      <p class="mt-10 text-red-400">
+        {{ error() }}
+      </p>
+    } @else if (ticket(); as currentTicket) {
+      <section class="mt-8 rounded-xl border border-slate-800 bg-slate-900 p-8">
+        <div class="flex flex-wrap items-center gap-3">
+          <span class="text-sm text-slate-500"> #{{ currentTicket.id }} </span>
+
+          <span class="rounded-full bg-slate-800 px-3 py-1 text-xs font-semibold">
+            {{ currentTicket.status }}
+          </span>
+
+          <span class="rounded-full bg-slate-800 px-3 py-1 text-xs font-semibold">
+            {{ currentTicket.priority }}
+          </span>
+        </div>
+
+        <h1 class="mt-5 text-3xl font-bold">
+          {{ currentTicket.title }}
+        </h1>
+
+        <p class="mt-4 text-lg text-slate-300">
+          {{ currentTicket.description }}
+        </p>
+
+        <div class="mt-8 grid gap-5 border-t border-slate-800 pt-6 text-sm md:grid-cols-3">
+          <div>
+            <p class="text-slate-500">Category</p>
+            <p class="mt-1 font-medium">
+              {{ currentTicket.categoryName }}
+            </p>
+          </div>
+
+          <div>
+            <p class="text-slate-500">Created by</p>
+            <p class="mt-1 font-medium">
+              {{ currentTicket.createdByName }}
+            </p>
+          </div>
+
+          <div>
+            <p class="text-slate-500">Assigned to</p>
+            <p class="mt-1 font-medium">
+              @if (currentTicket.assignedToName) {
+                {{ currentTicket.assignedToName }}
+              } @else {
+                Unassigned
+              }
+            </p>
+          </div>
+        </div>
+      </section>
+      @if (canManageTicket()) {
+        <section class="mt-6 rounded-xl border border-slate-800 bg-slate-900 p-6">
+          <div class="flex flex-col justify-between gap-6 md:flex-row md:items-end">
+            <div>
+              <h2 class="text-lg font-semibold">Ticket management</h2>
+
+              <p class="mt-1 text-sm text-slate-400">
+                Update the support workflow for this ticket.
+              </p>
+            </div>
+
+            @if (canClaimTicket()) {
+              <button
+                type="button"
+                (click)="claimTicket()"
+                [disabled]="actionLoading()"
+                class="rounded-lg bg-blue-600 px-5 py-3 font-semibold hover:bg-blue-500 disabled:opacity-50"
+              >
+                @if (actionLoading()) {
+                  Claiming...
+                } @else {
+                  Claim ticket
+                }
+              </button>
+            }
+          </div>
+
+          <div class="mt-6 grid gap-5 md:grid-cols-2">
+            <div>
+              <label for="status" class="mb-2 block text-sm font-medium text-slate-300">
+                Status
+              </label>
+
+              <select
+                id="status"
+                [ngModel]="currentTicket.status"
+                (ngModelChange)="updateStatus($event)"
+                [disabled]="actionLoading() || validNextStatuses().length === 0"
+                class="w-full rounded-lg border border-slate-700 bg-slate-950 px-4 py-3 outline-none focus:border-blue-500 disabled:opacity-60"
+              >
+                <option [value]="currentTicket.status" disabled>
+                  {{ currentTicket.status }}
+                </option>
+
+                @for (status of validNextStatuses(); track status) {
+                  <option [value]="status">→ {{ status }}</option>
+                }
+              </select>
+            </div>
+
+            <div>
+              <label for="priority" class="mb-2 block text-sm font-medium text-slate-300">
+                Priority
+              </label>
+
+              <select
+                id="priority"
+                [ngModel]="currentTicket.priority"
+                (ngModelChange)="updatePriority($event)"
+                [disabled]="actionLoading()"
+                class="w-full rounded-lg border border-slate-700 bg-slate-950 px-4 py-3 outline-none focus:border-blue-500"
+              >
+                @for (priority of priorities; track priority) {
+                  <option [value]="priority">
+                    {{ priority }}
+                  </option>
+                }
+              </select>
+            </div>
+          </div>
+
+          @if (actionError()) {
+            <p class="mt-4 text-sm text-red-400">
+              {{ actionError() }}
+            </p>
+          }
+        </section>
+      }
+      <section class="mt-10">
+        <h2 class="text-2xl font-bold">Comments</h2>
+
+        @if (comments().length === 0) {
+          <p class="mt-5 text-slate-400">No comments yet.</p>
+        } @else {
+          <div class="mt-5 space-y-4">
+            @for (comment of comments(); track comment.id) {
+              <article class="rounded-xl border border-slate-800 bg-slate-900 p-5">
+                <div class="flex items-center justify-between gap-4">
+                  <p class="font-semibold">
+                    {{ comment.userName }}
+                  </p>
+
+                  <p class="text-xs text-slate-500">
+                    {{ comment.createdAt | date:'dd MMM yyyy, HH:mm' }}
+                  </p>
+                </div>
+
+                <p class="mt-3 text-slate-300">
+                  {{ comment.message }}
+                </p>
+              </article>
+            }
+          </div>
+        }
+        @if (canComment()) {
+          <form class="mt-8" (ngSubmit)="addComment()">
+            <label for="comment" class="mb-2 block text-sm font-medium"> Add comment </label>
+
+            <textarea
+              id="comment"
+              name="comment"
+              [(ngModel)]="newComment"
+              rows="4"
+              required
+              placeholder="Write a comment..."
+              class="w-full resize-none rounded-lg border border-slate-700 bg-slate-900 px-4 py-3 outline-none focus:border-blue-500"
+            ></textarea>
+
+            @if (commentError()) {
+              <p class="mt-2 text-sm text-red-400">
+                {{ commentError() }}
+              </p>
+            }
+
+            <button
+              type="submit"
+              [disabled]="submittingComment() || !newComment.trim()"
+              class="mt-4 rounded-lg bg-blue-600 px-5 py-3 font-semibold hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              @if (submittingComment()) {
+                Adding...
+              } @else {
+                Add comment
+              }
+            </button>
+          </form>
+        } @else {
+          <p
+            class="mt-8 rounded-lg border border-slate-800 bg-slate-900 p-4 text-sm text-slate-400"
+          >
+            You can read this conversation, but only the ticket creator, assigned support agent, or
+            an administrator can participate.
+          </p>
+        }
+      </section>
+    }
+  </div>
+</main>
